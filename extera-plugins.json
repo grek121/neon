@@ -7,18 +7,16 @@
     {
       "id": "neon_black",
       "name": "NEON BLACK",
-      "description": "Тестовая сборка: проверка установки и страницы настроек.",
+      "description": "Кастомные подписи статуса и печати (экспериментально).",
       "author": "NEON BLACK",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "icon": "exteraPlugins/1",
       "app_version": ">=12.5.1",
       "sdk_version": ">=1.4.4.3",
-      "category": [
-        "appearance"
-      ],
+      "category": ["appearance"],
       "file": "neon_black.plugin",
-      "sha256": "f3c42aac94840cdd7624fa25cd15f70ae99afe5cdd77ebb61b8e43ba89860900",
-      "size": 1837,
+      "sha256": "c84a62330a19e170879e31dcd2b7e1cd7931114c9b5e699e4a8098252ab6c82e",
+      "size": 5310,
       "updated_at": "2026-11-22T00:00:00Z"
     }
   ]
