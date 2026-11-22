@@ -1,0 +1,125 @@
+from typing import Any, List
+
+from base_plugin import BasePlugin, MethodHook
+from hook_utils import find_class
+from ui.settings import Header, Input, Switch, Text
+
+__id__ = "neon_black"
+__name__ = "NEON BLACK"
+__description__ = "Кастомные подписи статуса и печати."
+__author__ = "grek121"
+__version__ = "1.1.0"
+__icon__ = "exteraPlugins/1"
+__app_version__ = ">=12.5.1"
+__sdk_version__ = ">=1.4.4.3"
+__category__ = ["appearance"]
+
+
+class StatusTextHook(MethodHook):
+    def __init__(self, plugin):
+        self.plugin = plugin
+
+    def after_hooked_method(self, param):
+        if not self.plugin.get_setting("status_enabled", True):
+            return
+        try:
+            if param.getResult() is None:
+                return
+            status_name = ""
+            for arg in param.args:
+                if arg is None:
+                    continue
+                try:
+                    user_status = getattr(arg, "status", None)
+                    if user_status is not None:
+                        status_name = str(user_status.getClass().getSimpleName())
+                        if status_name:
+                            break
+                except Exception:
+                    continue
+
+            mapping = {
+                "UserStatusOnline": "status_online",
+                "UserStatusOffline": "status_offline",
+                "UserStatusRecently": "status_recent",
+                "UserStatusLastWeek": "status_old",
+                "UserStatusLastMonth": "status_old",
+            }
+            key = mapping.get(status_name)
+            if key:
+                replacement = self.plugin.get_setting(key, "")
+                if replacement:
+                    param.setResult(replacement)
+        except Exception as exc:
+            self.plugin.logger.debug("Status hook skipped: %s", exc)
+
+
+class TypingTextHook(MethodHook):
+    def __init__(self, plugin):
+        self.plugin = plugin
+
+    def after_hooked_method(self, param):
+        if not self.plugin.get_setting("typing_enabled", True):
+            return
+        try:
+            container = param.thisObject
+            field = container.getClass().getDeclaredField("subtitleTextView")
+            field.setAccessible(True)
+            view = field.get(container)
+            if view is None:
+                return
+            current = view.getText()
+            if current is None:
+                return
+            current_text = str(current).lower()
+            if "typing" in current_text or "печатает" in current_text:
+                view.setText(self.plugin.get_setting("typing_text", "Пишет"))
+        except Exception as exc:
+            self.plugin.logger.debug("Typing hook skipped: %s", exc)
+
+
+class NeonBlackPlugin(BasePlugin):
+    def on_plugin_load(self):
+        self.logger.info("NEON BLACK 1.1.0 loaded")
+        try:
+            locale_class = find_class("org.telegram.messenger.LocaleController")
+            if locale_class:
+                hooks = self.hook_all_methods(
+                    locale_class, "formatUserStatus", StatusTextHook(self)
+                )
+                self.logger.info("Status hooks installed: %s", len(hooks or []))
+        except Exception as exc:
+            self.logger.exception("Could not install status hook: %s", exc)
+
+        try:
+            avatar_class = find_class("org.telegram.ui.Components.ChatAvatarContainer")
+            if avatar_class:
+                hooks = self.hook_all_methods(
+                    avatar_class, "updateSubtitle", TypingTextHook(self)
+                )
+                self.logger.info("Typing hooks installed: %s", len(hooks or []))
+        except Exception as exc:
+            self.logger.exception("Could not install typing hook: %s", exc)
+
+    def create_settings(self) -> List[Any]:
+        return [
+            Header(text="NEON BLACK"),
+            Text(
+                text="Минималистичные кастомные подписи.",
+                subtext="Изменения статусов экспериментальные и зависят от версии AyuGram."
+            ),
+            Header(text="Статусы собеседника"),
+            Switch(key="status_enabled", text="Заменять статусы", default=True),
+            Input(key="status_online", text="В сети", default="Бурмалдит"),
+            Input(key="status_offline", text="Не в сети", default="В хамаме"),
+            Input(key="status_recent", text="Был недавно", default="В хамаме"),
+            Input(key="status_old", text="Был давно", default="В хамаме"),
+            Header(text="Печать"),
+            Switch(key="typing_enabled", text="Заменять «печатает…»", default=True),
+            Input(key="typing_text", text="Текст вместо «печатает…»", default="Пишет"),
+            Header(text="Подпись профиля"),
+            Text(
+                text="Подпись над аватаркой пока не включена в эту сборку.",
+                subtext="Её нужно отдельно привязать к разметке ProfileActivity конкретной версии AyuGram."
+            ),
+        ]

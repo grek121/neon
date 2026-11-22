@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "name": "NEON BLACK",
+  "description": "Тестовый тёмный профиль оформления для AyuGram / exteraGram.",
+  "author": "NEON BLACK",
+  "plugins": [
+    {
+      "id": "neon_black",
+      "name": "NEON BLACK",
+      "description": "Тестовая сборка: проверка установки и страницы настроек.",
+      "author": "NEON BLACK",
+      "version": "1.0.0",
+      "icon": "exteraPlugins/1",
+      "app_version": ">=12.5.1",
+      "sdk_version": ">=1.4.4.3",
+      "category": [
+        "appearance"
+      ],
+      "file": "neon_black.plugin",
+      "sha256": "f3c42aac94840cdd7624fa25cd15f70ae99afe5cdd77ebb61b8e43ba89860900",
+      "size": 1837,
+      "updated_at": "2026-11-22T00:00:00Z"
+    }
+  ]
+}
